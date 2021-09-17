@@ -58,7 +58,7 @@ public class FilterUtilities {
 		}
 
 		guard let ruleTypeInt = hostNameRule["kRule"] as? Int,
-			ruleType = FilterRuleAction(rawValue: ruleTypeInt)
+              let ruleType = FilterRuleAction(rawValue: ruleTypeInt)
 			else { return (.Allow, hostname, [:]) }
 
 		return (ruleType, hostname, hostNameRule)
@@ -67,9 +67,8 @@ public class FilterUtilities {
 	/// Get the hostname from a browser flow.
 	public class func getFlowHostname(flow: NEFilterFlow) -> String {
 		guard let browserFlow : NEFilterBrowserFlow = flow as? NEFilterBrowserFlow,
-			url = browserFlow.URL,
-			hostname = url.host
-			where flow is NEFilterBrowserFlow
+              let url = browserFlow.url,
+              let hostname = url.host, flow is NEFilterBrowserFlow
 			else { return "" }
 		return hostname
 	}
@@ -86,14 +85,14 @@ public class FilterUtilities {
 
 		let content: String
 		do {
-			content = try String(contentsOfURL: infoURL, encoding: NSUTF8StringEncoding)
+            content = try String(contentsOf: infoURL as URL, encoding: String.Encoding.utf8)
 		}
 		catch {
 			print("Failed to fetch the rules from \(infoURL)")
 			return
 		}
 
-		let contentArray = content.componentsSeparatedByString("<br/>")
+        let contentArray = content.components(separatedBy:"<br/>")
 		print("Content array is \(contentArray)")
 		var urlRules = [String: [String: AnyObject]]()
 
@@ -101,7 +100,7 @@ public class FilterUtilities {
 			if rule.isEmpty {
 				continue
 			}
-			let ruleArray = rule.componentsSeparatedByString(" ")
+            let ruleArray = rule.components(separatedBy:" ")
 
 			guard !ruleArray.isEmpty else { continue }
 

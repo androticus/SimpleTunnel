@@ -288,8 +288,7 @@ public class Tunnel: NSObject {
 		}
 		var connection: Connection?
 
-		if let connectionIdentifierNumber = properties[TunnelMessageKey.Identifier.rawValue] as? Int
-			where commandType != .Open && commandType != .DNS
+        if let connectionIdentifierNumber = properties[TunnelMessageKey.Identifier.rawValue] as? Int, commandType != .Open, commandType != .DNS
 		{
 			connection = connections[connectionIdentifierNumber]
 		}
@@ -304,14 +303,14 @@ public class Tunnel: NSObject {
 
 				/* check if the message has properties for host and port */
 				if let host = properties[TunnelMessageKey.Host.rawValue] as? String,
-					port = properties[TunnelMessageKey.Port.rawValue] as? Int
+                   let port = properties[TunnelMessageKey.Port.rawValue] as? Int
 				{
 					print("Received data for connection \(connection?.identifier) from \(host):\(port)")
 					/* UDP case : send peer's address along with data */
-					targetConnection.sendDataWithEndPoint(data, host: host, port: port)
+                    targetConnection.sendDataWithEndPoint(data: data, host: host, port: port)
 				}
 				else {
-					targetConnection.sendData(data)
+                    targetConnection.sendData(data: data)
 				}
 
 			case .Suspend:
@@ -322,23 +321,22 @@ public class Tunnel: NSObject {
 
 			case .Close:
 				if let closeDirectionNumber = properties[TunnelMessageKey.CloseDirection.rawValue] as? Int,
-					closeDirection = TunnelConnectionCloseDirection(rawValue: closeDirectionNumber)
+                   let closeDirection = TunnelConnectionCloseDirection(rawValue: closeDirectionNumber)
 				{
-					targetConnection.closeConnection(closeDirection)
+                    targetConnection.closeConnection(direction: closeDirection)
 				} else {
-					targetConnection.closeConnection(.All)
+                    targetConnection.closeConnection(direction: .All)
 				}
 
 			case .Packets:
 				if let packets = properties[TunnelMessageKey.Packets.rawValue] as? [NSData],
-					protocols = properties[TunnelMessageKey.Protocols.rawValue] as? [NSNumber]
-					where packets.count == protocols.count
+                   let protocols = properties[TunnelMessageKey.Protocols.rawValue] as? [NSNumber], packets.count == protocols.count
 				{
-					targetConnection.sendPackets(packets, protocols: protocols)
+                    targetConnection.sendPackets(packets: packets, protocols: protocols)
 				}
 
 			default:
-				return handleMessage(commandType, properties: properties, connection: connection)
+                return handleMessage(command: commandType, properties: properties, connection: connection)
 		}
 
 		return true

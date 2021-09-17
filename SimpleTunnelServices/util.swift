@@ -33,11 +33,11 @@ class SavedData {
 
 	/// Add a data blob and offset to the end of the list.
 	func append(data: NSData, offset: Int) {
-		chain.append(data: data, offset: offset)
+        chain.append((data: data, offset: offset))
 	}
 
 	/// Write as much of the data in the list as possible to a stream
-	func writeToStream(stream: NSOutputStream) -> Bool {
+    func writeToStream(stream: OutputStream) -> Bool {
 		var result = true
 		var stopIndex = 0;
 		for (chainIndex, record) in chain.enumerate() {

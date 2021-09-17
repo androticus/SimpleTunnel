@@ -54,10 +54,10 @@ public class ClientTunnel: Tunnel {
 		}
 
 		// Kick off the connection to the server.
-		connection = provider.createTCPConnectionToEndpoint(endpoint, enableTLS:false, TLSParameters:nil, delegate:nil)
+        connection = provider.createTCPConnection(to: endpoint, enableTLS:false, tlsParameters:nil, delegate:nil)
 
 		// Register for notificationes when the connection status changes.
-		connection!.addObserver(self, forKeyPath: "state", options: .Initial, context: &connection)
+        connection!.addObserver(self, forKeyPath: "state", options: .initial, context: &connection)
 
 		return nil
 	}
@@ -72,7 +72,7 @@ public class ClientTunnel: Tunnel {
 	func handleReadEvent(data: NSData?, error: NSError?) {
 		if let readError = error {
 			print("Got an error on the tunnel connection: \(readError)")
-			closeTunnelWithError(readError)
+            closeTunnelWithError(error: readError)
 			return
 		}
 		guard let newData = data else {
@@ -84,13 +84,13 @@ public class ClientTunnel: Tunnel {
 		// If there is a previously-read incomplete message, append the new data to what was previously read.
 		var currentData = newData
 		if let oldData = previousData {
-			oldData.appendData(newData)
+            oldData.append(newData as Data)
 			currentData = oldData
 			previousData = nil
 		}
 
 		// Start out by looking at all of the data.
-		var currentRange = Range(start: 0, end: currentData.length)
+        var currentRange = Range(location: 0, length: currentData.length)
 
 		while currentRange.count > sizeof(UInt32.self) {
 			var totalLength: UInt32 = 0
@@ -196,8 +196,8 @@ public class ClientTunnel: Tunnel {
 			case .OpenResult:
 				// A logical connection was opened successfully.
 				guard let targetConnection = connection,
-					resultCodeNumber = properties[TunnelMessageKey.ResultCode.rawValue] as? Int,
-					resultCode = TunnelConnectionOpenResult(rawValue: resultCodeNumber)
+                      let resultCodeNumber = properties[TunnelMessageKey.ResultCode.rawValue] as? Int,
+                      let resultCode = TunnelConnectionOpenResult(rawValue: resultCodeNumber)
 					else
 				{
 					success = false
@@ -207,7 +207,7 @@ public class ClientTunnel: Tunnel {
 				if let remoteAddress = self.connection!.remoteAddress as? NWHostEndpoint {
 					remoteHost = remoteAddress.hostname
 				}
-				targetConnection.handleOpenCompleted(resultCode, properties:properties)
+                targetConnection.handleOpenCompleted(resultCode: resultCode, properties:properties)
 			
 			default:
 				print("Tunnel received an invalid command")
